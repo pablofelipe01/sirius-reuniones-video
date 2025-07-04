@@ -1,269 +1,334 @@
-# Sirius Regenerative - Video Conferencing Platform
+# sirius-reuniones-video
 
-A futuristic video conferencing platform with AI-powered transcription, real-time collaboration, and immersive 3D environments.
+🚀 **Plataforma de Videoconferencias Futurista con IA para Sirius Regenerative**
 
-## ✨ Features
+Una plataforma de videoconferencias de próxima generación con diseño cyberpunk/futurista, integración de IA y funcionalidades avanzadas de colaboración para equipos de 25 personas.
 
-- **🎥 Advanced Video Conferencing** - Powered by LiveKit with real-time video/audio
-- **🤖 AI-Powered Transcription** - Real-time transcription with AssemblyAI
-- **📝 Smart Summaries** - GPT-4 generated meeting summaries and action items
-- **💬 Real-time Chat** - Instant messaging during meetings
-- **🎨 Interactive Whiteboard** - Collaborative drawing and annotations
-- **🔍 Semantic Search** - Vector-based search through meeting transcripts
-- **👥 Role-based Access** - Super Admin, Team, and Guest roles
-- **🎮 Futuristic UI** - Cyberpunk-inspired design with 3D effects
-- **📱 Responsive Design** - Works on desktop, tablet, and mobile
+## ✨ Características Principales
 
-## 🛠 Tech Stack
+### 🎥 Videoconferencias Avanzadas
+- **LiveKit Integration**: Videoconferencias en tiempo real de alta calidad
+- **Grabación Automática**: Grabación de reuniones con almacenamiento en la nube
+- **Salas Virtuales**: Creación de salas persistentes con códigos únicos
 
-- **Frontend**: Next.js 14 (App Router), TypeScript, Tailwind CSS
-- **Backend**: Supabase (Auth, Database, Storage, Realtime)
-- **Video**: LiveKit (self-hosted or cloud)
-- **Transcription**: AssemblyAI (real-time and post-processing)
-- **AI**: OpenAI GPT-4 (summaries and embeddings)
-- **3D/Animations**: Three.js, React Three Fiber, Framer Motion
-- **UI Components**: Radix UI + custom design system
-- **Whiteboard**: TLDraw
-- **Queue System**: BullMQ with Redis
+### 🤖 IA Integrada
+- **Transcripción Automática**: Transcripción en tiempo real con AssemblyAI
+- **Análisis de Sentimientos**: Análisis automático del tono de las reuniones
+- **Resúmenes Inteligentes**: Resúmenes automáticos con puntos clave y acciones
+- **Procesamiento GPT-4**: Análisis avanzado de contenido con OpenAI
 
-## 🚀 Quick Start
+### 🎨 Diseño Futurista
+- **Estética Cyberpunk**: Inspirado en synthetic-humans.ai
+- **Componentes 3D**: Botones, tarjetas y efectos tridimensionales
+- **Partículas Animadas**: Fondo de partículas con Three.js
+- **Colores Sirius**: Paleta de azules y verdes corporativos
+- **Glassmorphism**: Efectos de cristal y transparencias
 
-### Prerequisites
+### 💬 Colaboración en Tiempo Real
+- **Chat en Vivo**: Mensajería durante las reuniones
+- **Pizarra Colaborativa**: Whiteboard con snapshots automáticos
+- **Gestión de Participantes**: Control de permisos y roles
+- **Invitaciones Inteligentes**: Sistema de invitaciones por email
 
-- Node.js 18+ and npm
-- Supabase account
-- LiveKit account (or self-hosted)
-- AssemblyAI API key
-- OpenAI API key
-- Redis instance (for background processing)
+## 🛠️ Stack Tecnológico
 
-### Installation
+### Frontend
+- **Next.js 15**: Framework React con App Router
+- **TypeScript**: Tipado estático y desarrollo robusto
+- **Tailwind CSS**: Utility-first CSS framework
+- **Three.js**: Gráficos 3D y animaciones
+- **Framer Motion**: Animaciones y transiciones
+- **Radix UI**: Componentes accesibles
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd reuniones-sirius
-   ```
+### Backend & Database
+- **Supabase**: Backend-as-a-Service con PostgreSQL
+- **Row Level Security**: Seguridad granular de datos
+- **Real-time Subscriptions**: Actualizaciones en tiempo real
+- **Vector Database**: Almacenamiento de embeddings para IA
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
+### Integraciones
+- **LiveKit**: Infraestructura de video/audio en tiempo real
+- **AssemblyAI**: Transcripción y análisis de audio
+- **OpenAI GPT-4**: Procesamiento de lenguaje natural
+- **Vercel**: Deployment y hosting
 
-3. **Set up environment variables**
-   ```bash
-   cp env.template .env.local
-   ```
-   
-   Fill in your environment variables in `.env.local`:
-   ```env
-   # Supabase Configuration
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+## 🚀 Instalación y Configuración
 
-   # LiveKit Configuration
-   LIVEKIT_API_KEY=your_livekit_api_key
-   LIVEKIT_API_SECRET=your_livekit_api_secret
-   NEXT_PUBLIC_LIVEKIT_URL=wss://your-livekit-server.com
-   LIVEKIT_WEBHOOK_SECRET=your_livekit_webhook_secret
-
-   # AssemblyAI Configuration
-   ASSEMBLYAI_API_KEY=your_assemblyai_api_key
-
-   # OpenAI Configuration
-   OPENAI_API_KEY=your_openai_api_key
-
-   # Redis Configuration
-   REDIS_URL=redis://localhost:6379
-
-   # Application Configuration
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   NEXT_PUBLIC_SUPER_ADMIN_EMAIL=pablo@siriusregenerative.com
-   WEBHOOK_SECRET=your_webhook_secret
-   ```
-
-4. **Set up Supabase Database**
-   - Go to your Supabase dashboard
-   - Open the SQL Editor
-   - Run the SQL from `database-setup.sql`
-
-5. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-6. **Visit the application**
-   Open [http://localhost:3000](http://localhost:3000) in your browser
-
-## 🏗 Project Structure
-
-```
-src/
-├── app/                     # Next.js 14 App Router
-│   ├── (auth)/             # Authentication pages
-│   ├── (dashboard)/        # Dashboard pages
-│   ├── meeting/            # Meeting room pages
-│   └── api/                # API routes
-├── components/
-│   ├── ui/                 # Reusable UI components
-│   ├── meeting/            # Meeting-specific components
-│   ├── three/              # 3D components
-│   └── layouts/            # Layout components
-├── lib/
-│   ├── supabase/           # Supabase configuration
-│   ├── livekit/            # LiveKit integration
-│   ├── assemblyai/         # AssemblyAI integration
-│   ├── openai/             # OpenAI integration
-│   ├── queue/              # Background job processing
-│   └── utils/              # Utility functions
-├── hooks/                  # React hooks
-├── types/                  # TypeScript type definitions
-└── styles/                 # Global styles
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/pablofelipe01/sirius-reuniones-video.git
+cd sirius-reuniones-video
 ```
 
-## 🎨 UI Components
+### 2. Instalar Dependencias
+```bash
+npm install
+```
 
-The platform features a custom design system with futuristic components:
+### 3. Configurar Variables de Entorno
+```bash
+cp env.template .env.local
+```
 
-- **Button3D** - 3D buttons with neon, holographic, and glass variants
-- **GlowCard** - Cards with glassmorphism and customizable glow effects
-- **NeonText** - Text with customizable neon glow effects
-- **HolographicAvatar** - Avatars with holographic effects and status indicators
-- **ParticleField** - 3D particle background effects
+Editar `.env.local` con tus credenciales:
+```env
+NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
+SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+NEXT_PUBLIC_LIVEKIT_WS_URL=tu_livekit_url
+LIVEKIT_API_KEY=tu_livekit_api_key
+LIVEKIT_API_SECRET=tu_livekit_secret
+ASSEMBLYAI_API_KEY=tu_assemblyai_key
+OPENAI_API_KEY=tu_openai_key
+```
 
-## 🔐 Authentication & Roles
+### 4. Configurar Base de Datos
+Ejecutar en el SQL Editor de Supabase:
+```sql
+-- Ver database-setup-simple.sql para el esquema completo
+```
 
-### User Roles
+### 5. Ejecutar el Servidor de Desarrollo
+```bash
+npm run dev
+```
 
-1. **Super Admin** (Pablo Acebedo)
-   - Approve/reject team member registrations
-   - Access all meetings and recordings
-   - Manage global settings
+Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
 
-2. **Team Members** (@siriusregenerative.com)
-   - Register with corporate email
-   - Require Super Admin approval
-   - Create and host meetings
-   - Access all recordings
+## 📊 Estado del Proyecto
 
-3. **Guests**
-   - Join via direct link
-   - No registration required
-   - Temporary access to specific meetings
+### ✅ Completado
+- [x] Configuración inicial y estructura del proyecto
+- [x] Sistema de autenticación con Supabase
+- [x] Dashboard principal con estadísticas
+- [x] Componentes UI futuristas (Button3D, GlowCard, NeonText)
+- [x] Fondo de partículas 3D con Three.js
+- [x] Esquema de base de datos completo
+- [x] Integración con Supabase y RLS
+- [x] Paleta de colores Sirius (azules y verdes)
+- [x] Responsive design y accesibilidad
 
-## 🎥 Meeting Features
+### 🔄 En Progreso
+- [ ] Sistema de creación de reuniones
+- [ ] Página para unirse a reuniones
+- [ ] Integración con LiveKit
+- [ ] Funcionalidades de IA (transcripción, análisis)
 
-### Room Styles
-- **Cyberpunk Neon** - Purple/blue neons with grid background
-- **Space Station** - Space view with holographic panels
-- **Digital Garden** - Organic-digital environment
-- **Matrix Code** - Green code rain background
-- **Synthwave Sunset** - Retro-wave aesthetics
+### 📋 Próximos Pasos
+- [ ] Chat en tiempo real
+- [ ] Pizarra colaborativa
+- [ ] Notificaciones push
+- [ ] Dashboard de administración
 
-### Meeting Capabilities
-- HD video conferencing with LiveKit
-- Real-time chat with markdown support
-- Collaborative whiteboard
-- Screen sharing with annotations
-- Automatic recording
-- Live transcription with speaker identification
-- Post-meeting AI analysis and summaries
+## 🎯 Usuarios Objetivo
 
-## 🤖 AI Features
+**Sirius Regenerative** - Organización de 25 personas que requiere:
+- Reuniones de equipo regulares
+- Colaboración en tiempo real
+- Análisis de productividad
+- Herramientas de gestión de proyectos
 
-### Real-time Transcription (AssemblyAI)
-- Live transcription during meetings
-- Speaker diarization (who said what)
-- Automatic punctuation and formatting
-- Sentiment analysis
-- Entity detection
+## 🤝 Contribución
 
-### Post-meeting Analysis (GPT-4)
-- Executive summaries
-- Key points extraction
-- Action items identification
-- Decision tracking
-- Meeting sentiment analysis
+1. Fork el proyecto
+2. Crear una rama feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit los cambios (`git commit -m 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abrir un Pull Request
 
-### Semantic Search
-- Vector embeddings for transcript search
-- Natural language queries
-- Context-aware results
-- Timeline navigation
+## 📝 Licencia
 
-## 🔄 Background Processing
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
 
-The platform uses BullMQ for asynchronous processing:
+## 🛡️ Seguridad
 
-1. **Meeting End** → Recording saved to Supabase Storage
-2. **Audio Extraction** → Extract audio from video recording
-3. **Transcription** → Send to AssemblyAI for processing
-4. **AI Analysis** → Generate summaries with GPT-4
-5. **Embedding** → Create vector embeddings for search
-6. **Notifications** → Notify participants of completed analysis
+- Autenticación JWT con Supabase
+- Row Level Security en base de datos
+- Validación de entrada en todos los endpoints
+- Encriptación de datos sensibles
 
-## 🚀 Deployment
+## 📞 Contacto
 
-### Environment Setup
-1. Set up production databases (Supabase, Redis)
-2. Configure LiveKit server
-3. Set up domain and SSL certificates
-4. Configure environment variables
+**Pablo Felipe** - [@pablofelipe01](https://github.com/pablofelipe01)
 
-### Deployment Options
-- **Vercel** (Recommended) - Automatic deployments from Git
-- **Docker** - Containerized deployment
-- **Self-hosted** - Deploy on your own infrastructure
-
-## 🔧 Configuration
-
-### Supabase Setup
-1. Create new Supabase project
-2. Run database setup SQL
-3. Configure authentication providers
-4. Set up storage buckets for recordings
-5. Enable realtime subscriptions
-
-### LiveKit Setup
-1. Create LiveKit project/server
-2. Generate API keys
-3. Configure webhooks for recording events
-4. Set up TURN servers for NAT traversal
-
-### AssemblyAI Setup
-1. Create AssemblyAI account
-2. Generate API key
-3. Configure webhook endpoints
-4. Set up real-time streaming
-
-## 📊 Analytics & Monitoring
-
-- User engagement metrics
-- Meeting duration and participation
-- Transcription accuracy
-- System performance monitoring
-- Error tracking with Sentry
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is proprietary software for Sirius Regenerative.
-
-## 🆘 Support
-
-For technical support or questions:
-- Email: pablo@siriusregenerative.com
-- Internal documentation: [Link to internal docs]
+**Proyecto:** [https://github.com/pablofelipe01/sirius-reuniones-video](https://github.com/pablofelipe01/sirius-reuniones-video)
 
 ---
 
-**Built with ❤️ for the future of video conferencing**
-# sirius-reuniones-video
+*Desarrollado con ❤️ para Sirius Regenerative*
+
+🚀 **Plataforma de Videoconferencias Futurista con IA para Sirius Regenerative**
+
+Una plataforma de videoconferencias de próxima generación con diseño cyberpunk/futurista, integración de IA y funcionalidades avanzadas de colaboración para equipos de 25 personas.
+
+## ✨ Características Principales
+
+### 🎥 Videoconferencias Avanzadas
+- **LiveKit Integration**: Videoconferencias en tiempo real de alta calidad
+- **Grabación Automática**: Grabación de reuniones con almacenamiento en la nube
+- **Salas Virtuales**: Creación de salas persistentes con códigos únicos
+
+### 🤖 IA Integrada
+- **Transcripción Automática**: Transcripción en tiempo real con AssemblyAI
+- **Análisis de Sentimientos**: Análisis automático del tono de las reuniones
+- **Resúmenes Inteligentes**: Resúmenes automáticos con puntos clave y acciones
+- **Procesamiento GPT-4**: Análisis avanzado de contenido con OpenAI
+
+### 🎨 Diseño Futurista
+- **Estética Cyberpunk**: Inspirado en synthetic-humans.ai
+- **Componentes 3D**: Botones, tarjetas y efectos tridimensionales
+- **Partículas Animadas**: Fondo de partículas con Three.js
+- **Colores Sirius**: Paleta de azules y verdes corporativos
+- **Glassmorphism**: Efectos de cristal y transparencias
+
+### 💬 Colaboración en Tiempo Real
+- **Chat en Vivo**: Mensajería durante las reuniones
+- **Pizarra Colaborativa**: Whiteboard con snapshots automáticos
+- **Gestión de Participantes**: Control de permisos y roles
+- **Invitaciones Inteligentes**: Sistema de invitaciones por email
+
+## 🛠️ Stack Tecnológico
+
+### Frontend
+- **Next.js 15**: Framework React con App Router
+- **TypeScript**: Tipado estático y desarrollo robusto
+- **Tailwind CSS**: Utility-first CSS framework
+- **Three.js**: Gráficos 3D y animaciones
+- **Framer Motion**: Animaciones y transiciones
+- **Radix UI**: Componentes accesibles
+
+### Backend & Database
+- **Supabase**: Backend-as-a-Service con PostgreSQL
+- **Row Level Security**: Seguridad granular de datos
+- **Real-time Subscriptions**: Actualizaciones en tiempo real
+- **Vector Database**: Almacenamiento de embeddings para IA
+
+### Integraciones
+- **LiveKit**: Infraestructura de video/audio en tiempo real
+- **AssemblyAI**: Transcripción y análisis de audio
+- **OpenAI GPT-4**: Procesamiento de lenguaje natural
+- **Vercel**: Deployment y hosting
+
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── app/                    # App Router (Next.js 15)
+│   ├── api/               # API Routes
+│   ├── auth/              # Autenticación
+│   ├── dashboard/         # Dashboard principal
+│   └── meetings/          # Gestión de reuniones
+├── components/            # Componentes reutilizables
+│   ├── ui/               # Componentes UI futuristas
+│   ├── three/            # Componentes 3D
+│   └── dashboard/        # Componentes del dashboard
+├── hooks/                # Custom React hooks
+├── lib/                  # Utilities y configuraciones
+├── styles/               # Estilos globales
+└── types/                # Definiciones TypeScript
+```
+
+## 🚀 Instalación y Configuración
+
+### 1. Clonar el Repositorio
+```bash
+git clone https://github.com/pablofelipe01/sirius-reuniones-video.git
+cd sirius-reuniones-video
+```
+
+### 2. Instalar Dependencias
+```bash
+npm install
+```
+
+### 3. Configurar Variables de Entorno
+```bash
+cp env.template .env.local
+```
+
+Editar `.env.local` con tus credenciales:
+```env
+NEXT_PUBLIC_SUPABASE_URL=tu_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=tu_anon_key
+SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
+NEXT_PUBLIC_LIVEKIT_WS_URL=tu_livekit_url
+LIVEKIT_API_KEY=tu_livekit_api_key
+LIVEKIT_API_SECRET=tu_livekit_secret
+ASSEMBLYAI_API_KEY=tu_assemblyai_key
+OPENAI_API_KEY=tu_openai_key
+```
+
+### 4. Configurar Base de Datos
+Ejecutar en el SQL Editor de Supabase:
+```sql
+-- Ver database-setup-simple.sql para el esquema completo
+```
+
+### 5. Ejecutar el Servidor de Desarrollo
+```bash
+npm run dev
+```
+
+Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
+
+## 📊 Estado del Proyecto
+
+### ✅ Completado
+- [x] Configuración inicial y estructura del proyecto
+- [x] Sistema de autenticación con Supabase
+- [x] Dashboard principal con estadísticas
+- [x] Componentes UI futuristas (Button3D, GlowCard, NeonText)
+- [x] Fondo de partículas 3D con Three.js
+- [x] Esquema de base de datos completo
+- [x] Integración con Supabase y RLS
+- [x] Paleta de colores Sirius (azules y verdes)
+- [x] Responsive design y accesibilidad
+
+### 🔄 En Progreso
+- [ ] Sistema de creación de reuniones
+- [ ] Página para unirse a reuniones
+- [ ] Integración con LiveKit
+- [ ] Funcionalidades de IA (transcripción, análisis)
+
+### 📋 Próximos Pasos
+- [ ] Chat en tiempo real
+- [ ] Pizarra colaborativa
+- [ ] Notificaciones push
+- [ ] Dashboard de administración
+
+## 🎯 Usuarios Objetivo
+
+**Sirius Regenerative** - Organización de 25 personas que requiere:
+- Reuniones de equipo regulares
+- Colaboración en tiempo real
+- Análisis de productividad
+- Herramientas de gestión de proyectos
+
+## 🤝 Contribución
+
+1. Fork el proyecto
+2. Crear una rama feature (`git checkout -b feature/nueva-funcionalidad`)
+3. Commit los cambios (`git commit -m 'Agregar nueva funcionalidad'`)
+4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
+5. Abrir un Pull Request
+
+## 📝 Licencia
+
+Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 🛡️ Seguridad
+
+- Autenticación JWT con Supabase
+- Row Level Security en base de datos
+- Validación de entrada en todos los endpoints
+- Encriptación de datos sensibles
+
+## 📞 Contacto
+
+**Pablo Felipe** - [@pablofelipe01](https://github.com/pablofelipe01)
+
+**Proyecto:** [https://github.com/pablofelipe01/sirius-reuniones-video](https://github.com/pablofelipe01/sirius-reuniones-video)
+
+---
+
+*Desarrollado con ❤️ para Sirius Regenerative*
