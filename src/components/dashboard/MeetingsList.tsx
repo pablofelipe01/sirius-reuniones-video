@@ -212,8 +212,7 @@ export function MeetingsList() {
                       variant="neon"
                       size="sm"
                       onClick={() => {
-                        // TODO: Implement start meeting
-                        alert('Funcionalidad de iniciar reunión próximamente');
+                        window.open(`/room/${meeting.room_name}`, '_blank');
                       }}
                     >
                       ▶️ Iniciar
@@ -224,8 +223,7 @@ export function MeetingsList() {
                       variant="holographic"
                       size="sm"
                       onClick={() => {
-                        // TODO: Implement join meeting
-                        alert('Funcionalidad de unirse a reunión próximamente');
+                        window.open(`/room/${meeting.room_name}`, '_blank');
                       }}
                     >
                       🚀 Unirse

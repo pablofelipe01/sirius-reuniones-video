@@ -11,6 +11,7 @@
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@livekit/components-react": "^2.9.13",
+    "@livekit/components-styles": "^1.1.6",
     "@livekit/track-processors": "^0.5.7",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
