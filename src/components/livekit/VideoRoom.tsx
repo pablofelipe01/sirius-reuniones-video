@@ -11,11 +11,9 @@ import {
   useTracks,
   useParticipants,
   useRoomInfo,
-  useLocalParticipant,
   ConnectionStateToast,
   Chat,
   ChatEntry,
-  ChatToggle,
 } from '@livekit/components-react';
 import { Track } from 'livekit-client';
 import { Button3D } from '@/components/ui/Button3D';
@@ -48,7 +46,7 @@ function VideoConference() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-sirius-blue">
-              🎥 {roomInfo.name}
+              🎥 {roomInfo.name || 'Sala de Reunión'}
             </h2>
             <p className="text-sm text-gray-400">
               {participants.length} participante{participants.length !== 1 ? 's' : ''}
@@ -65,12 +63,6 @@ function VideoConference() {
       <div className="flex-1 relative">
         <GridLayout 
           tracks={tracks}
-          style={{
-            container: {
-              backgroundColor: 'transparent',
-              height: '100%',
-            }
-          }}
         >
           <ParticipantTile />
         </GridLayout>
@@ -108,10 +100,18 @@ function RoomControls({ onDisconnect }: { onDisconnect: () => void }) {
           </Button3D>
         </div>
 
-        {/* Center Controls */}
+        {/* Center Controls - Native LiveKit ControlBar */}
         <div className="flex-1 flex justify-center">
           <div className="bg-gray-800/30 rounded-xl p-2">
             <ControlBar 
+              variation="minimal"
+              controls={{
+                microphone: true,
+                camera: true,
+                screenShare: true,
+                chat: false, // We'll handle chat separately
+                leave: false, // We have our own leave button
+              }}
               style={{
                 backgroundColor: 'transparent',
                 border: 'none',
@@ -122,18 +122,13 @@ function RoomControls({ onDisconnect }: { onDisconnect: () => void }) {
 
         {/* Right Controls */}
         <div className="flex items-center gap-2">
-          <ChatToggle
+          <Button3D
+            variant={showChat ? "neon" : "glass"}
+            size="sm"
             onClick={() => setShowChat(!showChat)}
-            style={{
-              backgroundColor: showChat ? '#1E90FF' : 'transparent',
-              color: showChat ? 'white' : '#1E90FF',
-              border: '1px solid #1E90FF',
-              borderRadius: '8px',
-              padding: '8px 12px',
-            }}
           >
             💬 Chat
-          </ChatToggle>
+          </Button3D>
         </div>
       </div>
 
@@ -146,20 +141,6 @@ function RoomControls({ onDisconnect }: { onDisconnect: () => void }) {
               color: 'white',
               height: '100%',
             }}
-            messageFormatter={(message, participant) => (
-              <ChatEntry
-                key={message.timestamp}
-                entry={message}
-                showName={true}
-                showTimestamp={true}
-                style={{
-                  backgroundColor: 'rgba(30, 144, 255, 0.1)',
-                  margin: '4px 0',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(30, 144, 255, 0.2)',
-                }}
-              />
-            )}
           />
         </div>
       )}
@@ -281,7 +262,12 @@ export function VideoRoom({ roomName, participantName, onDisconnect }: VideoRoom
             videoCodec: 'vp9',
           },
         }}
+        onDisconnected={() => {
+          console.log('Disconnected from room');
+          handleDisconnect();
+        }}
       >
+        {/* Main room content */}
         <div className="h-full flex flex-col">
           <div className="flex-1">
             <VideoConference />
