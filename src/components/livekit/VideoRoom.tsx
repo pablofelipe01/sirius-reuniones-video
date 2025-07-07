@@ -6,12 +6,12 @@ import {
   LiveKitRoom,
   VideoConference,
   ControlBar,
-  Chat,
   useConnectionState,
 } from '@livekit/components-react';
 import '@livekit/components-styles';
 import { Button3D } from '@/components/ui/Button3D';
 import { GlowCard } from '@/components/ui/GlowCard';
+import { EnhancedChat } from './EnhancedChat';
 
 interface VideoRoomProps {
   roomName: string;
@@ -63,11 +63,13 @@ function CustomVideoConference() {
 function RoomControls({ 
   onDisconnect, 
   onEndMeeting, 
-  isHost 
+  isHost,
+  meetingId 
 }: { 
   onDisconnect: () => void;
   onEndMeeting?: () => void;
   isHost?: boolean;
+  meetingId?: string;
 }) {
   const [showChat, setShowChat] = useState(false);
 
@@ -127,17 +129,13 @@ function RoomControls({
         </div>
       </div>
 
-      {/* Chat Panel */}
+      {/* Enhanced Chat Panel */}
       {showChat && (
-        <div className="border-t border-sirius-blue/20 h-80">
-          <Chat
-            style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.8)',
-              color: 'white',
-              height: '100%',
-            }}
-          />
-        </div>
+        <EnhancedChat
+          meetingId={meetingId}
+          maxHeight="400px"
+          className="border-t border-sirius-blue/20"
+        />
       )}
     </div>
   );
@@ -367,6 +365,7 @@ export function VideoRoom({ roomName, participantName, onDisconnect, meetingId, 
             onDisconnect={handleDisconnect} 
             onEndMeeting={isHost ? handleEndMeeting : undefined}
             isHost={isHost}
+            meetingId={meetingId}
           />
         </div>
       </LiveKitRoom>
