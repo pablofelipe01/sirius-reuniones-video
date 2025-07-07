@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button3D } from '@/components/ui/Button3D';
 import { GlowCard } from '@/components/ui/GlowCard';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Meeting {
   id: string;
@@ -31,14 +32,20 @@ interface Meeting {
 }
 
 export function MeetingsList() {
+  const { user } = useAuth();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
+  const [endingMeeting, setEndingMeeting] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
     fetchMeetings();
+    
+    // Refresh meetings every 30 seconds
+    const interval = setInterval(fetchMeetings, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const fetchMeetings = async () => {
@@ -52,9 +59,10 @@ export function MeetingsList() {
 
       const { meetings } = await response.json();
       setMeetings(meetings);
+      setError(null);
     } catch (err) {
       console.error('Error fetching meetings:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch meetings');
+      setError(err instanceof Error ? err.message : 'Failed to load meetings');
     } finally {
       setLoading(false);
     }
@@ -70,24 +78,25 @@ export function MeetingsList() {
     });
   };
 
-  const getMeetingStatus = (meeting: Meeting): { status: string; color: string } => {
-    // Only calculate time-dependent status on client side
-    if (!isClient) {
-      return { status: 'Cargando...', color: 'text-gray-400' };
-    }
-
+  const getMeetingStatus = (meeting: Meeting) => {
+    if (!isClient) return { status: 'Cargando...', color: 'text-gray-400' };
+    
     const now = new Date();
     const scheduledTime = new Date(meeting.scheduled_at);
     
     if (meeting.ended_at) {
       return { status: 'Completada', color: 'text-gray-400' };
-    } else if (meeting.started_at) {
-      return { status: 'En Curso', color: 'text-sirius-green' };
-    } else if (now >= scheduledTime) {
-      return { status: 'Lista para iniciar', color: 'text-sirius-blue' };
-    } else {
-      return { status: 'Programada', color: 'text-sirius-light-blue' };
     }
+    
+    if (meeting.started_at) {
+      return { status: 'En curso', color: 'text-sirius-green' };
+    }
+    
+    if (now >= scheduledTime) {
+      return { status: 'Lista para iniciar', color: 'text-yellow-400' };
+    }
+    
+    return { status: 'Programada', color: 'text-sirius-light-blue' };
   };
 
   const canJoinMeeting = (meeting: Meeting) => {
@@ -110,10 +119,46 @@ export function MeetingsList() {
     return now >= scheduledTime && !meeting.started_at && !meeting.ended_at;
   };
 
+  const canEndMeeting = (meeting: Meeting) => {
+    if (!isClient || !user) return false;
+    
+    // Can end if user is host, meeting has started, and hasn't ended
+    return meeting.host_id === user.id && meeting.started_at && !meeting.ended_at;
+  };
+
   const copyRoomCode = (roomName: string) => {
     navigator.clipboard.writeText(roomName);
     // TODO: Add toast notification
     alert(`Código copiado: ${roomName}`);
+  };
+
+  const handleEndMeeting = async (meeting: Meeting) => {
+    const confirmEnd = window.confirm(`¿Estás seguro de que quieres terminar la reunión "${meeting.title}"? Todos los participantes serán desconectados.`);
+    
+    if (!confirmEnd) return;
+
+    try {
+      setEndingMeeting(meeting.id);
+      
+      const response = await fetch(`/api/meetings/${meeting.id}/end`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to end meeting');
+      }
+
+      console.log('✅ Meeting ended successfully');
+      
+      // Refresh meetings list
+      await fetchMeetings();
+    } catch (err) {
+      console.error('Error ending meeting:', err);
+      alert('Error al terminar la reunión: ' + (err instanceof Error ? err.message : 'Error desconocido'));
+    } finally {
+      setEndingMeeting(null);
+    }
   };
 
   if (loading) {
@@ -151,7 +196,7 @@ export function MeetingsList() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold text-sirius-blue">
           🎥 Mis Reuniones
@@ -163,30 +208,39 @@ export function MeetingsList() {
       
       {meetings.map((meeting) => {
         const { status, color } = getMeetingStatus(meeting);
+        const isHost = user?.id === meeting.host_id;
         
         return (
-          <GlowCard key={meeting.id} className="p-6 hover:scale-[1.02] transition-transform">
-            <div className="flex justify-between items-start mb-4">
+          <GlowCard key={meeting.id} className="p-6">
+            <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {meeting.title}
-                </h3>
+                <h3 className="text-xl font-semibold text-white mb-2">{meeting.title}</h3>
                 {meeting.description && (
-                  <p className="text-gray-400 mb-3 leading-relaxed">
-                    {meeting.description}
-                  </p>
+                  <p className="text-gray-400 text-sm mb-3">{meeting.description}</p>
                 )}
-                <div className="flex items-center gap-6 text-sm text-gray-500">
-                  <span className="flex items-center gap-1">
-                    📅 {formatDateTime(meeting.scheduled_at)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    👥 {meeting.participants.length} participantes
-                  </span>
-                  <span className="flex items-center gap-1">
-                    🎬 {meeting.is_recording ? 'Con grabación' : 'Sin grabación'}
-                  </span>
+                
+                <div className="flex items-center gap-4 text-sm text-gray-300 mb-3">
+                  <div className="flex items-center gap-2">
+                    <span>📅</span>
+                    {isClient && (
+                      <span>
+                        {new Date(meeting.scheduled_at).toLocaleString('es-CO', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          timeZone: 'America/Bogota'
+                        })}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span>👑</span>
+                    <span>{isHost ? 'Anfitrión' : 'Participante'}</span>
+                  </div>
                 </div>
+
                 <div className="flex items-center gap-2 mt-2">
                   <span className="text-xs bg-gray-800/50 px-2 py-1 rounded">
                     Código: {meeting.room_name}
@@ -227,6 +281,17 @@ export function MeetingsList() {
                       }}
                     >
                       🚀 Unirse
+                    </Button3D>
+                  )}
+                  {canEndMeeting(meeting) && (
+                    <Button3D
+                      variant="neon"
+                      size="sm"
+                      onClick={() => handleEndMeeting(meeting)}
+                      disabled={endingMeeting === meeting.id}
+                      className="bg-red-600/20 hover:bg-red-600/30 border-red-500/50"
+                    >
+                      {endingMeeting === meeting.id ? '⏳ Terminando...' : '🔚 Terminar'}
                     </Button3D>
                   )}
                   {!meeting.started_at && !meeting.ended_at && (

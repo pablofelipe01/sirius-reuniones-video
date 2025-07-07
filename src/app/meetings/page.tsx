@@ -5,9 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Button3D } from '@/components/ui/Button3D';
 import { GlowCard } from '@/components/ui/GlowCard';
+import { NeonText } from '@/components/ui/NeonText';
 import { CreateMeetingForm } from '@/components/dashboard/CreateMeetingForm';
 import { MeetingsList } from '@/components/dashboard/MeetingsList';
 import { MeetingSuccessModal } from '@/components/dashboard/MeetingSuccessModal';
+
+type TabType = 'list' | 'create';
 
 interface Meeting {
   id: string;
@@ -22,13 +25,16 @@ interface Meeting {
 export default function MeetingsPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'list' | 'create'>('list');
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successData, setSuccessData] = useState<{
+  const [activeTab, setActiveTab] = useState<TabType>('list');
+  const [createdMeeting, setCreatedMeeting] = useState<{
     meeting: Meeting;
     roomCode: string;
     joinUrl: string;
   } | null>(null);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [joiningMeeting, setJoiningMeeting] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   // Redirect to login if not authenticated
   if (!loading && !user) {
@@ -48,56 +54,84 @@ export default function MeetingsPage() {
   }
 
   const handleMeetingCreated = (meeting: Meeting, roomCode: string, joinUrl: string) => {
-    setSuccessData({ meeting, roomCode, joinUrl });
-    setShowSuccessModal(true);
+    setCreatedMeeting({ meeting, roomCode, joinUrl });
   };
 
-  const handleSuccessModalClose = () => {
-    setShowSuccessModal(false);
-    setSuccessData(null);
-    setActiveTab('create'); // Allow creating another meeting
+  const handleCloseSuccessModal = () => {
+    setCreatedMeeting(null);
   };
 
   const handleViewMeetings = () => {
-    setShowSuccessModal(false);
-    setSuccessData(null);
+    setCreatedMeeting(null);
     setActiveTab('list');
   };
 
+  const handleJoinByCode = async () => {
+    if (!joinCode.trim()) {
+      setJoinError('Por favor, ingresa un código de reunión');
+      return;
+    }
+
+    try {
+      setJoiningMeeting(true);
+      setJoinError(null);
+      
+      // Validate the room code format (could be more sophisticated)
+      if (joinCode.length < 5) {
+        throw new Error('El código de reunión debe tener al menos 5 caracteres');
+      }
+      
+      // Redirect to the join page
+      router.push(`/meetings/join/${joinCode.trim()}`);
+    } catch (err) {
+      console.error('Error joining meeting:', err);
+      setJoinError(err instanceof Error ? err.message : 'Error al unirse a la reunión');
+    } finally {
+      setJoiningMeeting(false);
+    }
+  };
+
+  const handleQuickMeeting = () => {
+    // TODO: Implement quick meeting (instant meeting creation)
+    alert('Funcionalidad de reunión rápida próximamente');
+  };
+
+  const handleStats = () => {
+    // TODO: Implement statistics page
+    router.push('/dashboard');
+  };
+
   return (
-    <div className="min-h-screen py-8 px-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900 py-12">
+      <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-sirius-blue mb-2">
-            🎥 Sistema de Reuniones
-          </h1>
-          <p className="text-sirius-light-blue text-lg">
-            Crea y gestiona tus reuniones virtuales con IA integrada
+        <div className="text-center mb-12">
+          <NeonText className="text-5xl font-bold mb-4">
+            Centro de Reuniones
+          </NeonText>
+          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+            Gestiona todas tus videoconferencias desde un solo lugar. Crea, únete y administra reuniones con tecnología de vanguardia.
           </p>
-          <div className="mt-4 text-sm text-gray-400">
-            Bienvenido, <span className="text-sirius-green font-medium">{user?.email}</span>
-          </div>
         </div>
 
-        {/* Navigation Tabs */}
+        {/* Tabs Navigation */}
         <div className="flex justify-center mb-8">
-          <div className="flex bg-gray-800/30 rounded-xl p-1">
+          <div className="flex bg-gray-800/30 rounded-lg p-1 border border-gray-700">
             <button
               onClick={() => setActiveTab('list')}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              className={`px-6 py-2 rounded-md transition-all ${
                 activeTab === 'list'
                   ? 'bg-sirius-blue text-white shadow-lg'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
-              📋 Mis Reuniones
+              📅 Mis Reuniones
             </button>
             <button
               onClick={() => setActiveTab('create')}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              className={`px-6 py-2 rounded-md transition-all ${
                 activeTab === 'create'
-                  ? 'bg-sirius-green text-white shadow-lg'
+                  ? 'bg-sirius-blue text-white shadow-lg'
                   : 'text-gray-400 hover:text-white'
               }`}
             >
@@ -116,7 +150,7 @@ export default function MeetingsPage() {
                   <div className="text-3xl mb-2">🚀</div>
                   <h3 className="text-lg font-semibold text-white mb-2">Reunión Rápida</h3>
                   <p className="text-sm text-gray-400 mb-4">Inicia una reunión inmediata</p>
-                  <Button3D variant="neon" size="sm">
+                  <Button3D variant="neon" size="sm" onClick={handleQuickMeeting}>
                     Próximamente
                   </Button3D>
                 </GlowCard>
@@ -125,8 +159,8 @@ export default function MeetingsPage() {
                   <div className="text-3xl mb-2">🔗</div>
                   <h3 className="text-lg font-semibold text-white mb-2">Unirse por Código</h3>
                   <p className="text-sm text-gray-400 mb-4">Únete con un código de sala</p>
-                  <Button3D variant="holographic" size="sm">
-                    Próximamente
+                  <Button3D variant="holographic" size="sm" onClick={() => setShowJoinModal(true)}>
+                    Ingresar Código
                   </Button3D>
                 </GlowCard>
 
@@ -134,8 +168,8 @@ export default function MeetingsPage() {
                   <div className="text-3xl mb-2">📊</div>
                   <h3 className="text-lg font-semibold text-white mb-2">Estadísticas</h3>
                   <p className="text-sm text-gray-400 mb-4">Analiza tus reuniones</p>
-                  <Button3D variant="glass" size="sm">
-                    Próximamente
+                  <Button3D variant="glass" size="sm" onClick={handleStats}>
+                    Ver Dashboard
                   </Button3D>
                 </GlowCard>
               </div>
@@ -186,7 +220,7 @@ export default function MeetingsPage() {
                 </GlowCard>
               </div>
 
-              {/* Create Form */}
+              {/* Create Meeting Form */}
               <CreateMeetingForm
                 onMeetingCreated={handleMeetingCreated}
                 onCancel={() => setActiveTab('list')}
@@ -195,31 +229,82 @@ export default function MeetingsPage() {
           )}
         </div>
 
-        {/* Footer Info */}
-        <div className="text-center text-sm text-gray-500">
-          <p className="mb-2">
-            Powered by <span className="text-sirius-blue font-medium">Sirius Regenerative</span> - 
-            Next Generation Video Conferencing
-          </p>
-          <div className="flex justify-center gap-6 text-xs">
-            <span>🔒 Seguro</span>
-            <span>⚡ Rápido</span>
-            <span>🌟 Futurista</span>
-            <span>🤖 Inteligente</span>
-          </div>
-        </div>
-      </div>
+        {/* Success Modal */}
+        {createdMeeting && (
+          <MeetingSuccessModal
+            meeting={createdMeeting.meeting}
+            roomCode={createdMeeting.roomCode}
+            joinUrl={createdMeeting.joinUrl}
+            onClose={handleCloseSuccessModal}
+            onViewMeetings={handleViewMeetings}
+          />
+        )}
 
-      {/* Success Modal */}
-      {showSuccessModal && successData && (
-        <MeetingSuccessModal
-          meeting={successData.meeting}
-          roomCode={successData.roomCode}
-          joinUrl={successData.joinUrl}
-          onClose={handleSuccessModalClose}
-          onViewMeetings={handleViewMeetings}
-        />
-      )}
+        {/* Join by Code Modal */}
+        {showJoinModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="bg-gray-900/95 border border-sirius-blue/30 rounded-lg p-8 max-w-md w-full">
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">🔗</div>
+                <NeonText className="text-2xl font-bold">
+                  Unirse por Código
+                </NeonText>
+                <p className="text-gray-400 mt-2">
+                  Ingresa el código de la reunión
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm text-gray-400 mb-2">
+                    Código de reunión:
+                  </label>
+                  <input
+                    type="text"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value)}
+                    placeholder="ej: cosmic-nexus-123"
+                    className="w-full bg-gray-800/50 border border-gray-600 rounded px-4 py-3 text-white placeholder-gray-400 focus:border-sirius-blue focus:outline-none"
+                    onKeyPress={(e) => e.key === 'Enter' && handleJoinByCode()}
+                    autoFocus
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    El código fue proporcionado por el organizador de la reunión
+                  </p>
+                </div>
+
+                {joinError && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded p-3">
+                    <p className="text-red-400 text-sm">{joinError}</p>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <Button3D
+                    variant="glass"
+                    onClick={() => {
+                      setShowJoinModal(false);
+                      setJoinCode('');
+                      setJoinError(null);
+                    }}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button3D>
+                  <Button3D
+                    variant="neon"
+                    onClick={handleJoinByCode}
+                    disabled={joiningMeeting || !joinCode.trim()}
+                    className="flex-1"
+                  >
+                    {joiningMeeting ? '⏳ Uniéndose...' : '🚀 Unirse'}
+                  </Button3D>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 } 

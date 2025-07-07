@@ -1,89 +1,74 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   LiveKitRoom,
-  ParticipantTile,
-  RoomAudioRenderer,
+  VideoConference,
   ControlBar,
-  GridLayout,
-  useTracks,
-  useParticipants,
-  useRoomInfo,
-  ConnectionStateToast,
   Chat,
-  ChatEntry,
+  useConnectionState,
 } from '@livekit/components-react';
-import { Track } from 'livekit-client';
+import '@livekit/components-styles';
 import { Button3D } from '@/components/ui/Button3D';
 import { GlowCard } from '@/components/ui/GlowCard';
-
-import '@livekit/components-styles';
 
 interface VideoRoomProps {
   roomName: string;
   participantName: string;
   onDisconnect: () => void;
+  meetingId?: string;
+  isHost?: boolean;
 }
 
-function VideoConference() {
-  const tracks = useTracks(
-    [
-      { source: Track.Source.Camera, withPlaceholder: true },
-      { source: Track.Source.ScreenShare, withPlaceholder: false },
-    ],
-    { onlySubscribed: false },
-  );
+function CustomConnectionStateToast() {
+  const connectionState = useConnectionState();
   
-  const participants = useParticipants();
-  const roomInfo = useRoomInfo();
+  // Only show if not connected
+  if (connectionState === 'connected') {
+    return null;
+  }
+
+  const getConnectionMessage = () => {
+    switch (connectionState) {
+      case 'connecting':
+        return '🔄 Conectando...';
+      case 'reconnecting':
+        return '🔄 Reconectando...';
+      case 'disconnected':
+        return '❌ Desconectado';
+      default:
+        return '⏳ Iniciando...';
+    }
+  };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="bg-black/50 backdrop-blur-sm border-b border-sirius-blue/20 p-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-sirius-blue">
-              🎥 {roomInfo.name || 'Sala de Reunión'}
-            </h2>
-            <p className="text-sm text-gray-400">
-              {participants.length} participante{participants.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-400">
-            <span className="w-2 h-2 bg-sirius-green rounded-full animate-pulse"></span>
-            En vivo
-          </div>
-        </div>
+    <div className="fixed top-4 right-4 z-50">
+      <div className="bg-gray-900/90 backdrop-blur-sm border border-sirius-blue/30 rounded-lg px-4 py-2 text-sirius-light-blue">
+        {getConnectionMessage()}
       </div>
-
-      {/* Video Grid */}
-      <div className="flex-1 relative">
-        <GridLayout 
-          tracks={tracks}
-        >
-          <ParticipantTile />
-        </GridLayout>
-        
-        {/* Overlay effects */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-black/20" />
-          <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-        </div>
-      </div>
-
-      {/* Audio Renderer */}
-      <RoomAudioRenderer />
-      
-      {/* Connection Status */}
-      <ConnectionStateToast />
     </div>
   );
 }
 
-function RoomControls({ onDisconnect }: { onDisconnect: () => void }) {
+function CustomVideoConference() {
+  return (
+    <div className="relative h-full">
+      <VideoConference />
+      <CustomConnectionStateToast />
+    </div>
+  );
+}
+
+function RoomControls({ 
+  onDisconnect, 
+  onEndMeeting, 
+  isHost 
+}: { 
+  onDisconnect: () => void;
+  onEndMeeting?: () => void;
+  isHost?: boolean;
+}) {
   const [showChat, setShowChat] = useState(false);
 
   return (
@@ -98,6 +83,16 @@ function RoomControls({ onDisconnect }: { onDisconnect: () => void }) {
           >
             🚪 Salir
           </Button3D>
+          {isHost && onEndMeeting && (
+            <Button3D
+              variant="neon"
+              size="sm"
+              onClick={onEndMeeting}
+              className="bg-red-600/20 hover:bg-red-600/30 border-red-500/50"
+            >
+              🔚 Terminar Reunión
+            </Button3D>
+          )}
         </div>
 
         {/* Center Controls - Native LiveKit ControlBar */}
@@ -148,16 +143,32 @@ function RoomControls({ onDisconnect }: { onDisconnect: () => void }) {
   );
 }
 
-export function VideoRoom({ roomName, participantName, onDisconnect }: VideoRoomProps) {
+export function VideoRoom({ roomName, participantName, onDisconnect, meetingId, isHost }: VideoRoomProps) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [endingMeeting, setEndingMeeting] = useState(false);
+  const isGeneratingToken = useRef(false);
   const router = useRouter();
 
   useEffect(() => {
+    // Prevent multiple token generation requests
+    if (!roomName || !participantName || isGeneratingToken.current || token) {
+      return;
+    }
+
     async function generateToken() {
+      if (isGeneratingToken.current) {
+        console.log('🚫 Token generation already in progress, skipping...');
+        return;
+      }
+
       try {
+        isGeneratingToken.current = true;
         setLoading(true);
+        setError(null);
+        
+        console.log('🎫 Generating token for room:', roomName, 'participant:', participantName);
         
         const response = await fetch('/api/livekit/token', {
           method: 'POST',
@@ -176,21 +187,59 @@ export function VideoRoom({ roomName, participantName, onDisconnect }: VideoRoom
         }
 
         const data = await response.json();
+        console.log('✅ Token generated successfully');
         setToken(data.token);
       } catch (err) {
-        console.error('Error generating token:', err);
+        console.error('❌ Error generating token:', err);
         setError(err instanceof Error ? err.message : 'Failed to join room');
       } finally {
         setLoading(false);
+        isGeneratingToken.current = false;
       }
     }
 
     generateToken();
-  }, [roomName, participantName]);
+  }, [roomName, participantName, token]);
 
   const handleDisconnect = () => {
+    console.log('🚪 Disconnecting from room...');
     setToken(null);
+    isGeneratingToken.current = false;
     onDisconnect();
+  };
+
+  const handleEndMeeting = async () => {
+    if (!meetingId) {
+      console.error('No meeting ID provided');
+      return;
+    }
+
+    const confirmEnd = window.confirm('¿Estás seguro de que quieres terminar esta reunión? Todos los participantes serán desconectados.');
+    
+    if (!confirmEnd) return;
+
+    try {
+      setEndingMeeting(true);
+      
+      const response = await fetch(`/api/meetings/${meetingId}/end`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to end meeting');
+      }
+
+      console.log('✅ Meeting ended successfully');
+      
+      // Disconnect and redirect
+      handleDisconnect();
+    } catch (err) {
+      console.error('Error ending meeting:', err);
+      alert('Error al terminar la reunión: ' + (err instanceof Error ? err.message : 'Error desconocido'));
+    } finally {
+      setEndingMeeting(false);
+    }
   };
 
   if (loading) {
@@ -204,6 +253,9 @@ export function VideoRoom({ roomName, participantName, onDisconnect }: VideoRoom
           <p className="text-gray-400">
             Generando token de acceso seguro
           </p>
+          <div className="mt-4 text-xs text-gray-500">
+            Sala: {roomName} | Participante: {participantName}
+          </div>
         </GlowCard>
       </div>
     );
@@ -229,7 +281,12 @@ export function VideoRoom({ roomName, participantName, onDisconnect }: VideoRoom
             </Button3D>
             <Button3D
               variant="neon"
-              onClick={() => window.location.reload()}
+              onClick={() => {
+                // Reset states and try again
+                setError(null);
+                setToken(null);
+                isGeneratingToken.current = false;
+              }}
             >
               Reintentar
             </Button3D>
@@ -241,8 +298,42 @@ export function VideoRoom({ roomName, participantName, onDisconnect }: VideoRoom
 
   if (!token) {
     return (
-      <div className="h-screen flex items-center justify-center">
-        <p>No se pudo obtener token de acceso</p>
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
+        <GlowCard className="p-8 text-center">
+          <div className="text-6xl mb-4">⏳</div>
+          <h3 className="text-xl font-semibold text-yellow-400 mb-2">
+            Token no disponible
+          </h3>
+          <p className="text-gray-400 mb-6">
+            No se pudo obtener token de acceso
+          </p>
+          <Button3D
+            variant="neon"
+            onClick={() => {
+              setError(null);
+              setToken(null);
+              isGeneratingToken.current = false;
+            }}
+          >
+            Reintentar
+          </Button3D>
+        </GlowCard>
+      </div>
+    );
+  }
+
+  if (endingMeeting) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-black to-gray-900">
+        <GlowCard className="p-8 text-center">
+          <div className="w-12 h-12 border-4 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <h3 className="text-xl font-semibold text-red-400 mb-2">
+            Terminando reunión...
+          </h3>
+          <p className="text-gray-400">
+            Desconectando a todos los participantes
+          </p>
+        </GlowCard>
       </div>
     );
   }
@@ -270,9 +361,13 @@ export function VideoRoom({ roomName, participantName, onDisconnect }: VideoRoom
         {/* Main room content */}
         <div className="h-full flex flex-col">
           <div className="flex-1">
-            <VideoConference />
+            <CustomVideoConference />
           </div>
-          <RoomControls onDisconnect={handleDisconnect} />
+          <RoomControls 
+            onDisconnect={handleDisconnect} 
+            onEndMeeting={isHost ? handleEndMeeting : undefined}
+            isHost={isHost}
+          />
         </div>
       </LiveKitRoom>
     </div>
