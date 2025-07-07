@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { roomName: string } }
+  { params }: { params: Promise<{ roomName: string }> }
 ) {
   console.log('🔍 Starting meeting lookup by room name...');
   
@@ -43,7 +43,7 @@ export async function GET(
 
     console.log('✅ User authenticated:', user.email);
 
-    const { roomName } = params;
+    const { roomName } = await params;
 
     // Get meeting details
     const { data: meeting, error: meetingError } = await supabase

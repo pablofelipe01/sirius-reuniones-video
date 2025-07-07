@@ -85,7 +85,16 @@ export function CreateMeetingForm({ onMeetingCreated, onCancel }: CreateMeetingF
     
     const now = new Date();
     now.setMinutes(now.getMinutes() + 5);
-    return now.toISOString().slice(0, 16);
+    
+    // Convert to local timezone format for datetime-local input
+    // This ensures the validation works correctly in the user's timezone
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
   return (
@@ -152,7 +161,7 @@ export function CreateMeetingForm({ onMeetingCreated, onCancel }: CreateMeetingF
             className="w-full px-4 py-3 bg-gray-800/50 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-sirius-blue focus:border-transparent transition-all"
           />
           <div className="text-xs text-gray-500 mt-1">
-            La reunión debe programarse al menos 5 minutos en el futuro
+            La reunión debe programarse al menos 5 minutos en el futuro (hora local de Colombia)
           </div>
         </div>
 

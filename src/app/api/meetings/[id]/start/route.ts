@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   console.log('▶️ Starting meeting...');
   
@@ -43,7 +43,7 @@ export async function POST(
 
     console.log('✅ User authenticated:', user.email);
 
-    const { id: meetingId } = params;
+    const { id: meetingId } = await params;
 
     // Get meeting details
     const { data: meeting, error: meetingError } = await supabase

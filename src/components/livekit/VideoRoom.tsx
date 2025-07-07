@@ -40,7 +40,6 @@ function VideoConference() {
   
   const participants = useParticipants();
   const roomInfo = useRoomInfo();
-  const { localParticipant } = useLocalParticipant();
 
   return (
     <div className="h-full flex flex-col">
