@@ -168,13 +168,10 @@ export interface MeetingSummary {
 }
 
 // Component Props
-export interface Button3DProps {
+export interface Button3DProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'neon' | 'holographic' | 'glitch' | 'glass';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
-  onClick?: () => void;
-  disabled?: boolean;
-  className?: string;
   pulse?: boolean;
   glow?: boolean;
 }

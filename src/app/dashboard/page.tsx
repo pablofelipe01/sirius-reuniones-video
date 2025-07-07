@@ -96,7 +96,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Action Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <GlowCard className="p-8">
                 <h3 className="text-xl font-bold text-blue-400 mb-4">
                   Nueva Reunión
@@ -126,6 +126,22 @@ export default function DashboardPage() {
                   onClick={() => setCurrentView('meetings-list')}
                 >
                   Ver Reuniones
+                </Button3D>
+              </GlowCard>
+
+              <GlowCard className="p-8 border-sirius-blue/20 bg-sirius-blue/5">
+                <h3 className="text-xl font-bold text-sirius-blue mb-4">
+                  🎥 Centro de Reuniones
+                </h3>
+                <p className="text-gray-400 mb-6">
+                  Experiencia completa de gestión de reuniones
+                </p>
+                <Button3D
+                  variant="neon"
+                  className="w-full"
+                  onClick={() => router.push('/meetings')}
+                >
+                  Ir al Centro
                 </Button3D>
               </GlowCard>
 
