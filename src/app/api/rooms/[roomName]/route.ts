@@ -73,7 +73,7 @@ export async function GET(
     const isHost = meeting.host_id === user.id;
     
     // Check if user is a participant
-    const { data: participant, error: participantError } = await supabase
+    const { data: participant } = await supabase
       .from('meeting_participants')
       .select('id')
       .eq('meeting_id', meeting.id)

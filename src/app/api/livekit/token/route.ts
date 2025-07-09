@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user is host or participant
-    const { data: participant, error: participantError } = await supabase
+    const { data: participant } = await supabase
       .from('meeting_participants')
       .select('id')
       .eq('meeting_id', meeting.id)

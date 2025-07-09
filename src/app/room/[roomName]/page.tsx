@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { VideoRoom } from '@/components/livekit/VideoRoom';
@@ -31,19 +31,7 @@ export default function RoomPage() {
   const [joining, setJoining] = useState(false);
   const [inRoom, setInRoom] = useState(false);
 
-  // Redirect to login if not authenticated
-  if (!authLoading && !user) {
-    router.push('/auth/login');
-    return null;
-  }
-
-  useEffect(() => {
-    if (!roomName || authLoading) return;
-    
-    fetchMeetingInfo();
-  }, [roomName, authLoading]);
-
-  const fetchMeetingInfo = async () => {
+  const fetchMeetingInfo = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -61,7 +49,19 @@ export default function RoomPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [roomName]);
+
+  useEffect(() => {
+    if (!roomName || authLoading) return;
+    
+    fetchMeetingInfo();
+  }, [roomName, authLoading, fetchMeetingInfo]);
+
+  // Redirect to login if not authenticated
+  if (!authLoading && !user) {
+    router.push('/auth/login');
+    return null;
+  }
 
   const handleJoinRoom = async () => {
     if (!meeting || !user) return;
@@ -164,7 +164,7 @@ export default function RoomPage() {
   const now = new Date();
   const scheduledTime = new Date(meeting.scheduled_at);
   const canJoin = now >= scheduledTime && !hasEnded;
-  const canStart = canJoin && !hasStarted && isHost;
+  // const canStart = canJoin && !hasStarted && isHost;
 
   if (hasEnded) {
     return (

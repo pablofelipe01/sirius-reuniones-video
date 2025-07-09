@@ -52,13 +52,13 @@ export interface MeetingRecording {
   assemblyai_transcript_id?: string;
   transcription_status: ProcessingStatus;
   transcription?: string;
-  speakers?: any[];
-  chapters?: any[];
-  highlights?: any[];
-  sentiment_analysis?: any;
+  speakers?: unknown[];
+  chapters?: unknown[];
+  highlights?: unknown[];
+  sentiment_analysis?: unknown;
   summary?: string;
-  key_points?: any[];
-  action_items?: any[];
+  key_points?: unknown[];
+  action_items?: unknown[];
   embedding?: number[];
   processed_at?: string;
   created_at: string;
@@ -79,7 +79,7 @@ export interface ChatMessage {
 export interface WhiteboardSnapshot {
   id: string;
   meeting_id: string;
-  data: any;
+  data: unknown;
   preview_url?: string;
   created_at: string;
 }
@@ -123,7 +123,7 @@ export interface LiveKitToken {
   token: string;
   roomName: string;
   participantName: string;
-  metadata?: any;
+  metadata?: unknown;
 }
 
 // AssemblyAI Types
@@ -201,13 +201,13 @@ export interface UseMeetingReturn {
   joinMeeting: (roomName: string, participantName: string) => Promise<void>;
   leaveMeeting: () => Promise<void>;
   isConnected: boolean;
-  localParticipant: any;
-  remoteParticipants: any[];
+  localParticipant: unknown;
+  remoteParticipants: unknown[];
 }
 
 export interface UseAuthReturn {
   user: User | null;
-  session: any;
+  session: unknown;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;

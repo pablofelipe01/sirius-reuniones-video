@@ -68,15 +68,15 @@ export function MeetingsList() {
     }
   };
 
-  const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  // const formatDateTime = (dateString: string) => {
+  //   return new Date(dateString).toLocaleString('es-ES', {
+  //     year: 'numeric',
+  //     month: 'short',
+  //     day: 'numeric',
+  //     hour: '2-digit',
+  //     minute: '2-digit'
+  //   });
+  // };
 
   const getMeetingStatus = (meeting: Meeting) => {
     if (!isClient) return { status: 'Cargando...', color: 'text-gray-400' };

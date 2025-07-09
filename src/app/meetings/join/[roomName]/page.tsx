@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Button3D } from '@/components/ui/Button3D';
@@ -31,23 +31,7 @@ export default function JoinMeetingPage() {
   const [joining, setJoining] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Redirect to login if not authenticated
-  if (!authLoading && !user) {
-    router.push('/auth/login');
-    return null;
-  }
-
-  useEffect(() => {
-    if (!roomName || authLoading) return;
-    
-    fetchMeetingInfo();
-  }, [roomName, authLoading]);
-
-  const fetchMeetingInfo = async () => {
+  const fetchMeetingInfo = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -70,7 +54,23 @@ export default function JoinMeetingPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [roomName]);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (!roomName || authLoading || !user) return;
+    
+    fetchMeetingInfo();
+  }, [roomName, authLoading, user, fetchMeetingInfo]);
+
+  // Redirect to login if not authenticated
+  if (!authLoading && !user) {
+    router.push('/auth/login');
+    return null;
+  }
 
   const handleJoinMeeting = async () => {
     if (!meeting || !user) return;

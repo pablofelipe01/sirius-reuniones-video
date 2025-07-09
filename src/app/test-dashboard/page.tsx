@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function TestDashboardPage() {
   const { user, isAuthenticated } = useAuth();
-  const [testResults, setTestResults] = useState<any>(null);
+  const [testResults, setTestResults] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(false);
 
   const testAuth = async () => {

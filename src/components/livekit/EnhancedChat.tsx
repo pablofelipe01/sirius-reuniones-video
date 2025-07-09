@@ -6,7 +6,6 @@ import {
   useMaybeRoomContext,
   ChatMessage as LiveKitChatMessage,
   useRemoteParticipants,
-  useLocalParticipant,
 } from '@livekit/components-react';
 import { Button3D } from '@/components/ui/Button3D';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,10 +34,13 @@ export function EnhancedChat({
   className = "",
   maxHeight = "320px" 
 }: EnhancedChatProps) {
+  console.log('💬 EnhancedChat mounting with meetingId:', meetingId);
+  
   const { user } = useAuth();
   const room = useMaybeRoomContext();
-  const { localParticipant } = useLocalParticipant();
   const remoteParticipants = useRemoteParticipants();
+  
+  console.log('💬 EnhancedChat context:', { user: user?.id, room: !!room, meetingId });
   
   // LiveKit chat hooks
   const { chatMessages: liveKitMessages, send: sendLiveKitMessage } = useChat();
@@ -54,13 +56,52 @@ export function EnhancedChat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasLoadedRef = useRef(false);
   
   // Load message history on mount
-  useEffect(() => {
-    if (meetingId) {
-      loadMessageHistory();
+  const loadMessageHistory = useCallback(async () => {
+    if (!meetingId) {
+      console.log('💬 loadMessageHistory: no meetingId provided');
+      return;
+    }
+    
+    console.log('💬 Loading chat history for meetingId:', meetingId);
+    
+    try {
+      setLoadingHistory(true);
+      setError(null);
+      
+      console.log('💬 Making request to:', `/api/meetings/${meetingId}/messages?limit=100`);
+      
+      const response = await fetch(`/api/meetings/${meetingId}/messages?limit=100`);
+      
+      console.log('💬 Response status:', response.status);
+      
+      if (!response.ok) {
+        throw new Error('Failed to load message history');
+      }
+      
+      const data = await response.json();
+      console.log('💬 Messages loaded:', data.messages?.length || 0);
+      setPersistentMessages(data.messages || []);
+    } catch (err) {
+      console.error('💬 Error loading message history:', err);
+      setError('Failed to load message history');
+    } finally {
+      setLoadingHistory(false);
+      hasLoadedRef.current = true;
     }
   }, [meetingId]);
+
+  // Load message history on mount - only once per meetingId
+  useEffect(() => {
+    console.log('💬 useEffect triggered, meetingId:', meetingId, 'hasLoaded:', hasLoadedRef.current);
+    
+    if (meetingId && !hasLoadedRef.current) {
+      console.log('💬 Calling loadMessageHistory...');
+      loadMessageHistory();
+    }
+  }, [meetingId]); // Remove loadMessageHistory from dependencies
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -78,29 +119,6 @@ export function EnhancedChat({
       }
     }
   }, [liveKitMessages, meetingId, user?.id]);
-
-  const loadMessageHistory = async () => {
-    if (!meetingId) return;
-    
-    try {
-      setLoadingHistory(true);
-      setError(null);
-      
-      const response = await fetch(`/api/meetings/${meetingId}/messages?limit=100`);
-      
-      if (!response.ok) {
-        throw new Error('Failed to load message history');
-      }
-      
-      const data = await response.json();
-      setPersistentMessages(data.messages || []);
-    } catch (err) {
-      console.error('Error loading message history:', err);
-      setError('Failed to load message history');
-    } finally {
-      setLoadingHistory(false);
-    }
-  };
 
   const saveLiveKitMessageToDatabase = async (liveKitMessage: LiveKitChatMessage) => {
     if (!meetingId || !liveKitMessage.message) return;
