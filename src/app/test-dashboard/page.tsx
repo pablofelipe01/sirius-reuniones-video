@@ -17,7 +17,7 @@ export default function TestDashboardPage() {
       const data = await response.json();
       setTestResults(prev => ({ ...prev, auth: data }));
     } catch (error) {
-      setTestResults(prev => ({ ...prev, auth: { error: error.message } }));
+      setTestResults(prev => ({ ...prev, auth: { error: error instanceof Error ? error.message : 'Unknown error' } }));
     }
     setLoading(false);
   };
@@ -29,7 +29,7 @@ export default function TestDashboardPage() {
       const data = await response.json();
       setTestResults(prev => ({ ...prev, stats: { status: response.status, data } }));
     } catch (error) {
-      setTestResults(prev => ({ ...prev, stats: { error: error.message } }));
+      setTestResults(prev => ({ ...prev, stats: { error: error instanceof Error ? error.message : 'Unknown error' } }));
     }
     setLoading(false);
   };
@@ -41,7 +41,7 @@ export default function TestDashboardPage() {
       const data = await response.json();
       setTestResults(prev => ({ ...prev, meetings: { status: response.status, data } }));
     } catch (error) {
-      setTestResults(prev => ({ ...prev, meetings: { error: error.message } }));
+      setTestResults(prev => ({ ...prev, meetings: { error: error instanceof Error ? error.message : 'Unknown error' } }));
     }
     setLoading(false);
   };

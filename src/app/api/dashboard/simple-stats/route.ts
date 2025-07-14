@@ -36,7 +36,7 @@ export async function GET() {
       totalParticipants: 0
     };
 
-    const mockRecentMeetings = [];
+    const mockRecentMeetings: object[] = [];
 
     console.log('✅ Returning mock stats');
 

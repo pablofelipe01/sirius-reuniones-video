@@ -12,6 +12,7 @@ import '@livekit/components-styles';
 import { Button3D } from '@/components/ui/Button3D';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { EnhancedChat } from './EnhancedChat';
+import { SimpleWhiteboard } from '@/components/whiteboard/SimpleWhiteboard';
 
 interface VideoRoomProps {
   roomName: string;
@@ -72,6 +73,32 @@ function RoomControls({
   meetingId?: string;
 }) {
   const [showChat, setShowChat] = useState(false);
+  const [showWhiteboard, setShowWhiteboard] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingLoading, setRecordingLoading] = useState(false);
+
+  const handleStartRecording = async () => {
+    if (!meetingId || !isHost) return;
+    
+    setRecordingLoading(true);
+    try {
+      const response = await fetch(`/api/meetings/${meetingId}/recording`, {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        setIsRecording(true);
+        console.log('✅ Recording started');
+      } else {
+        const error = await response.json();
+        console.error('❌ Failed to start recording:', error);
+      }
+    } catch (error) {
+      console.error('❌ Recording error:', error);
+    } finally {
+      setRecordingLoading(false);
+    }
+  };
 
   return (
     <div className="bg-black/80 backdrop-blur-sm border-t border-sirius-blue/20">
@@ -124,9 +151,30 @@ function RoomControls({
             size="sm"
             onClick={() => setShowChat(!showChat)}
           >
-            💬 Chat
+            💬 Chat {showChat && "✓"}
           </Button3D>
-        </div>
+          
+                      <Button3D
+              variant={showWhiteboard ? "neon" : "glass"}
+              size="sm"
+              onClick={() => setShowWhiteboard(!showWhiteboard)}
+              className={showWhiteboard ? "ring-2 ring-sirius-blue" : ""}
+            >
+              🎨 Pizarra {showWhiteboard && "✓"}
+            </Button3D>
+
+            {isHost && (
+              <Button3D
+                variant={isRecording ? "neon" : "glass"}
+                size="sm"
+                onClick={handleStartRecording}
+                disabled={recordingLoading || isRecording}
+                className={isRecording ? "ring-2 ring-red-500" : ""}
+              >
+                {recordingLoading ? '⏳' : isRecording ? '🔴 Grabando' : '📹 Grabar'}
+              </Button3D>
+            )}
+          </div>
       </div>
 
       {/* Enhanced Chat Panel */}
@@ -137,6 +185,16 @@ function RoomControls({
           className="border-t border-sirius-blue/20"
         />
       )}
+
+      {/* Collaborative Whiteboard */}
+      {showWhiteboard && meetingId && (
+        <SimpleWhiteboard 
+          meetingId={meetingId}
+          isHost={isHost}
+          onClose={() => setShowWhiteboard(false)}
+        />
+      )}
+
     </div>
   );
 }

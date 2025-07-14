@@ -202,7 +202,7 @@ Saludos`;
       <div className="bg-gray-900/95 border border-sirius-blue/30 rounded-lg p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         <div className="text-center mb-6">
           <div className="text-6xl mb-4">🎉</div>
-          <NeonText variant="sirius-green" className="text-2xl font-bold">
+          <NeonText color="#00D4AA" className="text-2xl font-bold">
             ¡Reunión Creada Exitosamente!
           </NeonText>
         </div>
