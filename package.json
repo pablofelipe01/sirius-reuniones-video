@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:system": "node test-system.js",
+    "test:full": "npm run build && npm run test:system"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
@@ -83,6 +85,7 @@
     "@types/react-dom": "^19",
     "@types/three": "^0.178.0",
     "@types/uuid": "^10.0.0",
+    "dotenv": "^17.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
     "tailwindcss": "^3.4.17",
