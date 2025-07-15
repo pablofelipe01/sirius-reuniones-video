@@ -43,18 +43,18 @@ export default function JoinMeetingPage() {
       if (response.ok) {
         const data = await response.json();
         setIsAuthenticated(true);
+        setParticipantName(data.user?.metadata?.full_name || data.user?.email?.split('@')[0] || '');
         
-                 // Verificar si es el host de esta reunión
-         const meetingResponse = await fetch(`/api/meetings/info/${roomCode}`);
-         if (meetingResponse.ok) {
-           await meetingResponse.json();
-           // Si puede acceder a la info completa, probablemente es el host o participante
-           setIsHost(true); // Por simplicidad, asumir que usuarios autenticados son hosts
-           setParticipantName(data.user?.metadata?.full_name || data.user?.email?.split('@')[0] || '');
-         }
-       }
-     } catch {
-       console.log('User not authenticated, treating as guest');
+        // Verificar si es el host REAL de esta reunión específica
+        const meetingResponse = await fetch(`/api/meetings/info/${roomCode}`);
+        if (meetingResponse.ok) {
+          const meetingData = await meetingResponse.json();
+          // Solo es host si su user.id coincide con el host_id de la reunión
+          setIsHost(meetingData.meeting?.host_id === data.user?.id);
+        }
+      }
+    } catch {
+      console.log('User not authenticated, treating as guest');
     } finally {
       setCheckingAuth(false);
     }
@@ -116,12 +116,22 @@ export default function JoinMeetingPage() {
             Reunión No Encontrada
           </NeonText>
           <p className="text-gray-400 mb-6">{error}</p>
-          <Button3D
-            variant="glass"
-            onClick={() => router.push('/')}
-          >
-            🏠 Ir al Inicio
-          </Button3D>
+          <div className="flex gap-4 justify-center">
+            <Button3D
+              variant="glass"
+              onClick={() => router.push('/')}
+            >
+              🏠 Ir al Inicio
+            </Button3D>
+            {isAuthenticated && (
+              <Button3D
+                variant="neon"
+                onClick={() => router.push('/meetings')}
+              >
+                📊 Ir al Dashboard
+              </Button3D>
+            )}
+          </div>
         </GlowCard>
       </div>
     );
@@ -188,6 +198,28 @@ export default function JoinMeetingPage() {
             {isJoining ? '🔄 Entrando...' : '🎥 Entrar a la Reunión'}
           </Button3D>
         </div>
+
+        {/* Navigation buttons for authenticated users */}
+        {isAuthenticated && (
+          <div className="mt-6 pt-4 border-t border-gray-700">
+            <div className="flex gap-3 justify-center">
+              <Button3D
+                variant="glass"
+                size="sm"
+                onClick={() => router.push('/')}
+              >
+                🏠 Inicio
+              </Button3D>
+              <Button3D
+                variant="holographic"
+                size="sm"
+                onClick={() => router.push('/meetings')}
+              >
+                📊 Dashboard
+              </Button3D>
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 pt-6 border-t border-gray-700">
           <p className="text-xs text-gray-500">

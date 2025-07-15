@@ -4,11 +4,18 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   LiveKitRoom,
-  VideoConference,
+  GridLayout,
+  ParticipantTile,
   ControlBar,
   useConnectionState,
+  useTracks,
+  useParticipants,
+  RoomAudioRenderer,
+  TrackLoop,
+  useLocalParticipant,
 } from '@livekit/components-react';
 import '@livekit/components-styles';
+import { Track } from 'livekit-client';
 import { Button3D } from '@/components/ui/Button3D';
 import { GlowCard } from '@/components/ui/GlowCard';
 import { EnhancedChat } from './EnhancedChat';
@@ -53,10 +60,36 @@ function CustomConnectionStateToast() {
   );
 }
 
-function CustomVideoConference() {
+function OptimizedVideoConference() {
+  const tracks = useTracks(
+    [
+      { source: Track.Source.Camera, withPlaceholder: true },
+      { source: Track.Source.ScreenShare, withPlaceholder: false },
+    ],
+    { onlySubscribed: false },
+  );
+
+  const participants = useParticipants();
+
   return (
-    <div className="relative h-full">
-      <VideoConference />
+    <div className="relative h-full w-full">
+      <GridLayout 
+        tracks={tracks}
+        style={{ 
+          height: '100%',
+          '--lk-bg': 'transparent',
+          '--lk-fg': '#ffffff',
+        }}
+      >
+        <TrackLoop>
+          <ParticipantTile />
+        </TrackLoop>
+      </GridLayout>
+      
+      {/* Audio rendering for all participants */}
+      <RoomAudioRenderer />
+      
+      {/* Connection status overlay */}
       <CustomConnectionStateToast />
     </div>
   );
@@ -155,27 +188,27 @@ function RoomControls({
             💬 Chat {showChat && "✓"}
           </Button3D>
           
-                      <Button3D
-              variant={showWhiteboard ? "neon" : "glass"}
-              size="sm"
-              onClick={() => setShowWhiteboard(!showWhiteboard)}
-              className={showWhiteboard ? "ring-2 ring-sirius-blue" : ""}
-            >
-              🎨 Pizarra {showWhiteboard && "✓"}
-            </Button3D>
+          <Button3D
+            variant={showWhiteboard ? "neon" : "glass"}
+            size="sm"
+            onClick={() => setShowWhiteboard(!showWhiteboard)}
+            className={showWhiteboard ? "ring-2 ring-sirius-blue" : ""}
+          >
+            🎨 Pizarra {showWhiteboard && "✓"}
+          </Button3D>
 
-            {isHost && (
-              <Button3D
-                variant={isRecording ? "neon" : "glass"}
-                size="sm"
-                onClick={handleStartRecording}
-                disabled={recordingLoading || isRecording}
-                className={isRecording ? "ring-2 ring-red-500" : ""}
-              >
-                {recordingLoading ? '⏳' : isRecording ? '🔴 Grabando' : '📹 Grabar'}
-              </Button3D>
-            )}
-          </div>
+          {isHost && (
+            <Button3D
+              variant={isRecording ? "neon" : "glass"}
+              size="sm"
+              onClick={handleStartRecording}
+              disabled={recordingLoading || isRecording}
+              className={isRecording ? "ring-2 ring-red-500" : ""}
+            >
+              {recordingLoading ? '⏳' : isRecording ? '🔴 Grabando' : '📹 Grabar'}
+            </Button3D>
+          )}
+        </div>
       </div>
 
       {/* Enhanced Chat Panel */}
@@ -411,9 +444,50 @@ export function VideoRoom({ roomName, participantName, onDisconnect, meetingId, 
         data-lk-theme="default"
         style={{ height: '100vh' }}
         options={{
+          // Optimize for multiple participants
+          adaptiveStream: true,
+          dynacast: true,
           publishDefaults: {
             simulcast: true,
             videoCodec: 'vp9',
+            videoEncoding: {
+              maxBitrate: 1_500_000,
+              maxFramerate: 30,
+            },
+            videoSimulcastLayers: [
+              {
+                width: 1280,
+                height: 720,
+                encoding: {
+                  maxBitrate: 1_200_000,
+                  maxFramerate: 30,
+                },
+              },
+              {
+                width: 640,
+                height: 360,
+                encoding: {
+                  maxBitrate: 500_000,
+                  maxFramerate: 20,
+                },
+              },
+              {
+                width: 320,
+                height: 180,
+                encoding: {
+                  maxBitrate: 150_000,
+                  maxFramerate: 15,
+                },
+              },
+            ],
+          },
+          // Optimize video capture for conferences
+          videoCaptureDefaults: {
+            resolution: {
+              width: 1280,
+              height: 720,
+              frameRate: 30,
+            },
           },
         }}
         onDisconnected={() => {
@@ -421,10 +495,10 @@ export function VideoRoom({ roomName, participantName, onDisconnect, meetingId, 
           handleDisconnect();
         }}
       >
-        {/* Main room content */}
+        {/* Main room content with optimized layout */}
         <div className="h-full flex flex-col">
-          <div className="flex-1">
-            <CustomVideoConference />
+          <div className="flex-1 overflow-hidden">
+            <OptimizedVideoConference />
           </div>
           <RoomControls 
             onDisconnect={handleDisconnect} 
