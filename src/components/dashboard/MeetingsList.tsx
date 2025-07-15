@@ -38,6 +38,7 @@ export function MeetingsList() {
   const [error, setError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [endingMeeting, setEndingMeeting] = useState<string | null>(null);
+  const [cancelingMeeting, setCancelingMeeting] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -130,6 +131,42 @@ export function MeetingsList() {
     navigator.clipboard.writeText(roomName);
     // TODO: Add toast notification
     alert(`Código copiado: ${roomName}`);
+  };
+
+  const copyMeetingLink = (roomName: string) => {
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || window.location.origin;
+    const fullLink = `${baseUrl}/join/${roomName}`;
+    navigator.clipboard.writeText(fullLink);
+    alert(`Link copiado: ${fullLink}`);
+  };
+
+  const handleCancelMeeting = async (meeting: Meeting) => {
+    const confirmCancel = window.confirm(`¿Estás seguro de que quieres cancelar la reunión "${meeting.title}"? Esta acción no se puede deshacer.`);
+    
+    if (!confirmCancel) return;
+
+    try {
+      setCancelingMeeting(meeting.id);
+      
+      const response = await fetch(`/api/meetings/${meeting.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to cancel meeting');
+      }
+
+      console.log('✅ Meeting canceled successfully');
+      
+      // Refresh meetings list
+      await fetchMeetings();
+    } catch (err) {
+      console.error('Error canceling meeting:', err);
+      alert('Error al cancelar la reunión: ' + (err instanceof Error ? err.message : 'Error desconocido'));
+    } finally {
+      setCancelingMeeting(null);
+    }
   };
 
   const handleEndMeeting = async (meeting: Meeting) => {
@@ -251,7 +288,15 @@ export function MeetingsList() {
                     onClick={() => copyRoomCode(meeting.room_name)}
                     className="text-xs"
                   >
-                    📋 Copiar
+                    📋 Código
+                  </Button3D>
+                  <Button3D
+                    variant="holographic"
+                    size="sm"
+                    onClick={() => copyMeetingLink(meeting.room_name)}
+                    className="text-xs"
+                  >
+                    🔗 Link
                   </Button3D>
                 </div>
               </div>
@@ -295,16 +340,27 @@ export function MeetingsList() {
                     </Button3D>
                   )}
                   {!meeting.started_at && !meeting.ended_at && (
-                    <Button3D
-                      variant="glass"
-                      size="sm"
-                      onClick={() => {
-                        // TODO: Implement edit meeting
-                        alert('Funcionalidad de editar reunión próximamente');
-                      }}
-                    >
-                      ✏️ Editar
-                    </Button3D>
+                    <>
+                      <Button3D
+                        variant="glass"
+                        size="sm"
+                        onClick={() => {
+                          // TODO: Implement edit meeting
+                          alert('Funcionalidad de editar reunión próximamente');
+                        }}
+                      >
+                        ✏️ Editar
+                      </Button3D>
+                      <Button3D
+                        variant="glass"
+                        size="sm"
+                        onClick={() => handleCancelMeeting(meeting)}
+                        disabled={cancelingMeeting === meeting.id}
+                        className="bg-red-600/20 hover:bg-red-600/30 border-red-500/50"
+                      >
+                        {cancelingMeeting === meeting.id ? '⏳ Cancelando...' : '❌ Cancelar'}
+                      </Button3D>
+                    </>
                   )}
                 </div>
               </div>
