@@ -20,6 +20,7 @@ interface VideoRoomProps {
   onDisconnect: () => void;
   meetingId?: string;
   isHost?: boolean;
+  isGuest?: boolean; // Para invitados sin autenticación
 }
 
 function CustomConnectionStateToast() {
@@ -199,13 +200,16 @@ function RoomControls({
   );
 }
 
-export function VideoRoom({ roomName, participantName, onDisconnect, meetingId, isHost }: VideoRoomProps) {
+export function VideoRoom({ roomName, participantName, onDisconnect, meetingId, isHost, isGuest = false }: VideoRoomProps) {
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [endingMeeting, setEndingMeeting] = useState(false);
   const isGeneratingToken = useRef(false);
   const router = useRouter();
+
+  // TODO: Usar isGuest para permisos diferenciados
+  console.log('VideoRoom isGuest:', isGuest);
 
   useEffect(() => {
     // Prevent multiple token generation requests
@@ -224,9 +228,12 @@ export function VideoRoom({ roomName, participantName, onDisconnect, meetingId, 
         setLoading(true);
         setError(null);
         
-        console.log('🎫 Generating token for room:', roomName, 'participant:', participantName);
+        console.log('🎫 Generating token for room:', roomName, 'participant:', participantName, 'isGuest:', isGuest);
         
-        const response = await fetch('/api/livekit/token', {
+        // Use different API endpoint for guests
+        const tokenEndpoint = isGuest ? '/api/livekit/guest-token' : '/api/livekit/token';
+        
+        const response = await fetch(tokenEndpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

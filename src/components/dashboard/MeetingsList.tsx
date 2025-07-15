@@ -266,7 +266,7 @@ export function MeetingsList() {
                       variant="neon"
                       size="sm"
                       onClick={() => {
-                        window.open(`/room/${meeting.room_name}`, '_blank');
+                        window.open(`/join/${meeting.room_name}`, '_blank');
                       }}
                     >
                       ▶️ Iniciar
@@ -277,7 +277,7 @@ export function MeetingsList() {
                       variant="holographic"
                       size="sm"
                       onClick={() => {
-                        window.open(`/room/${meeting.room_name}`, '_blank');
+                        window.open(`/join/${meeting.room_name}`, '_blank');
                       }}
                     >
                       🚀 Unirse

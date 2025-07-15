@@ -305,7 +305,7 @@ Saludos`;
               </Button3D>
               <Button3D
                 variant="neon"
-                onClick={() => window.open(`/room/${roomCode}`, '_blank')}
+                onClick={() => window.open(`/join/${roomCode}`, '_blank')}
                 className="flex-1"
               >
                 🚀 Ir a la Reunión

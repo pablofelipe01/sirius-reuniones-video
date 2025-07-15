@@ -237,7 +237,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ 
       meeting,
       room_code: meeting.room_name,
-      join_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/meetings/join/${meeting.room_name}`
+      join_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/join/${meeting.room_name}`
     });
   } catch (error) {
     console.error('❌ API Error:', error);
